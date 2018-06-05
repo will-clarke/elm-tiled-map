@@ -1,17 +1,17 @@
-module TiledMap exposing (..)
+module TiledMap exposing (gameMap, cropImage)
 
-import Tileset exposing (Tileset)
 import Tiled.Decode as Tiled
 import Element exposing (Element)
 import Dict
+import Debug
 
-gameMap : Tileset -> Tiled.Level -> Element
-gameMap tileset level =
+gameMap :  Tiled.Level -> Element
+gameMap level =
     mapSprites
-        tileset
         (overlayedSpriteInts level)
         |> List.map (\row -> List.foldr Element.beside Element.empty row)
         |> List.foldr Element.above Element.empty
+
 
 overlayedSpriteInts : Tiled.Level -> List (List Int)
 overlayedSpriteInts level =
@@ -24,11 +24,13 @@ overlayedSpriteInts level =
         , (spriteNumbers 4 level)
         ]
 
+
 nullLayer : Tiled.Level -> List (List Int)
 nullLayer level =
     List.repeat
         level.height
         (List.repeat level.width 0)
+
 
 overwriteLayers : List (List Int) -> List (List Int) -> List (List Int)
 overwriteLayers original dominant =
@@ -38,17 +40,23 @@ overwriteLayers original dominant =
 overwriteList : List Int -> List Int -> List Int
 overwriteList original dominant =
     List.map2
-        (\a -> \b -> if b == 0 then a else b)
+        (\a ->
+            \b ->
+                if b == 0 then
+                    a
+                else
+                    b
+        )
         original
         dominant
 
 
-spriteElements : Int -> Tileset -> Tiled.Level -> List (List Element.Element)
-spriteElements levelNumber tileset level =
+spriteElements : Int -> Tiled.Level -> List (List Element.Element)
+spriteElements levelNumber level =
     spriteNumbers levelNumber level
         |> List.map
             (\row ->
-                List.map (\int -> Tileset.cropImage tileset int) row
+                List.map (\int -> cropImage level int) row
             )
 
 
@@ -107,9 +115,9 @@ headWithDefault layers =
         |> Maybe.withDefault (Tiled.TileLayer nullTileLayerData)
 
 
-mapSprites : Tileset -> List (List Int) -> List (List Element)
-mapSprites tileset =
-    List.map (\row -> List.map (Tileset.cropImage tileset) row)
+mapSprites : Tiled.Layer -> List (List Int) -> List (List Element)
+mapSprites layer =
+    List.map (\row -> List.map (cropImage layer) row)
 
 
 layoutLayerTileNumbers : Tiled.TileLayerData -> List (List Int)
@@ -146,3 +154,58 @@ nullTileLayerData =
     , y = 0
     , properties = Dict.fromList []
     }
+
+nullEmbeddedTileData : Tiled.TilesetEmbedded
+nullEmbeddedTileData =
+    { columns = 0
+    , firstgid = 0
+    , image = ""
+    , imageheight = 0
+    , imagewidth = 0
+    , margin = 0
+    , name = ""
+    , spacing = 0
+    , tilecount = 0
+    , tileheight = 0
+    , tilewidth = 0
+    , transparentcolor = ""
+    , tiles = Dict.fromList []
+    , properties =  Dict.fromList [] }
+
+unwrap : Some(A) -> A
+unwrap wrapped =
+    case wrapped of
+        Some(a) -> a
+        None -> Debug.crash "Tried to unwrap a None"
+
+cropImage : Tiled.TileLayer -> Int -> Element.Element
+cropImage layer tileNumber =
+
+    let
+        embeddedTileData =
+            case List.head layer.tilesets
+        xTileCount =
+            -- we're now loading this from the Embeddedtiledata
+            layer.
+            -- tileCountWidth layer
+
+        xTileNumber =
+            if xTileCount == 0 then
+                0
+            else
+                tileNumber % xTileCount
+
+        yTileNumber =
+            tileNumber // xTileCount
+
+        xTilePxStart =
+            (xTileNumber * layer.tileWidthPx) - layer.tileWidthPx
+
+        yTilePxStart =
+            (yTileNumber * layer.tileHeightPx)
+    in
+        Element.croppedImage
+            ( xTilePxStart, yTilePxStart )
+            layer.tileHeightPx
+            layer.tileWidthPx
+            layer.path
