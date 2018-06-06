@@ -5,9 +5,11 @@ import Element exposing (Element)
 import Dict
 import Debug
 
-gameMap :  Tiled.Level -> Element
+
+gameMap : Tiled.Level -> Element
 gameMap level =
     mapSprites
+        level
         (overlayedSpriteInts level)
         |> List.map (\row -> List.foldr Element.beside Element.empty row)
         |> List.foldr Element.above Element.empty
@@ -115,9 +117,9 @@ headWithDefault layers =
         |> Maybe.withDefault (Tiled.TileLayer nullTileLayerData)
 
 
-mapSprites : Tiled.Layer -> List (List Int) -> List (List Element)
-mapSprites layer =
-    List.map (\row -> List.map (cropImage layer) row)
+mapSprites : Tiled.Level -> List (List Int) -> List (List Element)
+mapSprites level =
+    List.map (\row -> List.map (cropImage level) row)
 
 
 layoutLayerTileNumbers : Tiled.TileLayerData -> List (List Int)
@@ -155,39 +157,35 @@ nullTileLayerData =
     , properties = Dict.fromList []
     }
 
-nullEmbeddedTileData : Tiled.TilesetEmbedded
-nullEmbeddedTileData =
-    { columns = 0
-    , firstgid = 0
-    , image = ""
-    , imageheight = 0
-    , imagewidth = 0
-    , margin = 0
-    , name = ""
-    , spacing = 0
-    , tilecount = 0
-    , tileheight = 0
-    , tilewidth = 0
-    , transparentcolor = ""
-    , tiles = Dict.fromList []
-    , properties =  Dict.fromList [] }
 
-unwrap : Some(A) -> A
+unwrap : Maybe a -> a
 unwrap wrapped =
     case wrapped of
-        Some(a) -> a
-        None -> Debug.crash "Tried to unwrap a None"
+        Just a ->
+            a
 
-cropImage : Tiled.TileLayer -> Int -> Element.Element
-cropImage layer tileNumber =
+        Nothing ->
+            Debug.crash "Tried to unwrap a None"
 
+
+cropImage : Tiled.Level -> Int -> Element.Element
+cropImage level tileNumber =
     let
+        embeddedTileData : Tiled.EmbeddedTileData
         embeddedTileData =
-            case List.head layer.tilesets
+            case
+                (List.head level.tilesets
+                    |> unwrap
+                )
+            of
+                Tiled.TilesetEmbedded a ->
+                    a
+
+                _ ->
+                    Debug.crash "We need an embeddedTileData object in the .json file.\n See https://discourse.mapeditor.org/t/how-do-i-embed-the-tilesets/1761"
+
         xTileCount =
-            -- we're now loading this from the Embeddedtiledata
-            layer.
-            -- tileCountWidth layer
+            embeddedTileData.columns
 
         xTileNumber =
             if xTileCount == 0 then
@@ -199,13 +197,13 @@ cropImage layer tileNumber =
             tileNumber // xTileCount
 
         xTilePxStart =
-            (xTileNumber * layer.tileWidthPx) - layer.tileWidthPx
+            (xTileNumber * embeddedTileData.tilewidth) - embeddedTileData.tilewidth
 
         yTilePxStart =
-            (yTileNumber * layer.tileHeightPx)
+            (yTileNumber * embeddedTileData.tileheight)
     in
         Element.croppedImage
             ( xTilePxStart, yTilePxStart )
-            layer.tileHeightPx
-            layer.tileWidthPx
-            layer.path
+            level.tileheight
+            level.tilewidth
+            embeddedTileData.image
