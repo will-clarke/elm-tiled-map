@@ -29,15 +29,10 @@ overlayedSpriteInts : Tiled.Level -> List (List Int)
 overlayedSpriteInts level =
     List.foldr overwriteLayers
         (nullLayer level)
-        (List.range
-            0
-            ((level.layers
-                |> List.filter isTileLayer
-                |> List.length
-             )
-                - 1
-            )
-            |> List.map (\i -> (spriteNumbers i level))
+        (level.layers
+        |> List.indexedMap (,)
+        |> List.filter (\(index, layer) -> isTileLayer layer)
+        |> List.map (\(index, layer) -> (spriteNumbers index level))
         )
 
 

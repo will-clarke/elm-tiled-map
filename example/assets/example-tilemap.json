@@ -1,0 +1,39 @@
+{ "height":10,
+ "infinite":false,
+ "layers":[
+        {
+         "data":[11, 12, 3, 3, 3, 3, 3, 3, 3, 3, 11, 18, 3, 3, 3, 3, 3, 4, 5, 6, 12, 3, 3, 3, 3, 3, 3, 16, 11, 12, 16, 6, 3, 3, 3, 3, 3, 3, 16, 18, 3, 16, 9, 9, 6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 14, 3, 3, 3, 3, 3, 3, 3, 3, 3, 16, 6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 16, 6, 3, 3, 3, 3, 4, 6, 3, 3, 3, 14, 3, 3, 3, 3, 16, 18, 3, 3, 3, 14, 3, 3, 3],
+         "height":10,
+         "name":"My example layer",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":10,
+         "x":0,
+         "y":0
+        }],
+ "nextobjectid":1,
+ "orientation":"orthogonal",
+ "renderorder":"right-down",
+ "tiledversion":"1.1.5",
+ "tileheight":16,
+ "tilesets":[
+        {
+         "columns":6,
+         "firstgid":1,
+         "image":"/example/assets/image.png",
+         "imageheight":48,
+         "imagewidth":96,
+         "margin":0,
+         "name":"example-tileset",
+         "spacing":0,
+         "tilecount":18,
+         "tileheight":16,
+         "tilewidth":16
+        }
+ ],
+ "tilewidth":16,
+ "type":"map",
+ "version":1,
+ "width":10
+}
