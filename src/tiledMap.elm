@@ -30,9 +30,9 @@ overlayedSpriteInts level =
     List.foldr overwriteLayers
         (nullLayer level)
         (level.layers
-        |> List.indexedMap (,)
-        |> List.filter (\(index, layer) -> isTileLayer layer)
-        |> List.map (\(index, layer) -> (spriteNumbers index level))
+            |> List.indexedMap (,)
+            |> List.filter (\( index, layer ) -> isTileLayer layer)
+            |> List.map (\( index, layer ) -> (spriteNumbers index level))
         )
 
 
