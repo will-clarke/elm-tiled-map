@@ -56,4 +56,5 @@ view : Model -> Html Msg
 view model =
     Html.div
         []
-        [TiledMap.gameMap model.map |> Element.toHtml]
+        [ TiledMap.gameMap model.map |> Element.toHtml
+        ]

@@ -1,9 +1,10 @@
-module TiledMap exposing (gameMap, cropImage)
+module TiledMap exposing (gameMap, cropImage, overlayedSpriteInts, spritePixelPosition, spritePosition)
 
 import Tiled.Decode as Tiled
 import Element exposing (Element)
 import Dict
 import Debug
+import Dict
 
 
 gameMap : Tiled.Level -> Element
@@ -15,16 +16,6 @@ gameMap level =
         |> List.foldr Element.above Element.empty
 
 
-isTileLayer : Tiled.Layer -> Bool
-isTileLayer layer =
-    case layer of
-        Tiled.TileLayer _ ->
-            True
-
-        _ ->
-            False
-
-
 overlayedSpriteInts : Tiled.Level -> List (List Int)
 overlayedSpriteInts level =
     List.foldr overwriteLayers
@@ -34,6 +25,16 @@ overlayedSpriteInts level =
             |> List.filter (\( index, layer ) -> isTileLayer layer)
             |> List.map (\( index, layer ) -> (spriteNumbers index level))
         )
+
+
+isTileLayer : Tiled.Layer -> Bool
+isTileLayer layer =
+    case layer of
+        Tiled.TileLayer _ ->
+            True
+
+        _ ->
+            False
 
 
 nullLayer : Tiled.Level -> List (List Int)
@@ -73,8 +74,8 @@ spriteElements levelNumber level =
 
 spriteNumbers : Int -> Tiled.Level -> List (List Int)
 spriteNumbers levelNumber level =
-    layoutLayerTileNumbers <|
-        nLayer levelNumber level.layers
+    nLayer levelNumber level.layers
+        |> layoutLayerTileNumbers
 
 
 nLayer : Int -> List Tiled.Layer -> Tiled.TileLayerData
@@ -177,42 +178,96 @@ unwrap wrapped =
             Debug.crash "Tried to unwrap a None"
 
 
-cropImage : Tiled.Level -> Int -> Element.Element
-cropImage level tileNumber =
+spritePixelPosition : Tiled.Level -> Int -> ( Int, Int )
+spritePixelPosition level tileNumber =
     let
-        embeddedTileData : Tiled.EmbeddedTileData
         embeddedTileData =
-            case
-                (List.head level.tilesets
-                    |> unwrap
-                )
-            of
+            firstTileSetData level
+
+        ( x, y ) =
+            spritePosition level tileNumber
+    in
+        ( x * embeddedTileData.tilewidth
+        , y * embeddedTileData.tileheight
+        )
+
+
+spritePosition : Tiled.Level -> Int -> ( Int, Int )
+spritePosition level tileNumber =
+    let
+        embeddedTileData =
+            firstTileSetData level
+
+        x =
+            if embeddedTileData.columns == 0 then
+                0
+            else
+                (tileNumber - 1) % embeddedTileData.columns
+
+        y =
+            (tileNumber - 1) // embeddedTileData.columns
+    in
+        ( x, y )
+
+
+nullEmbeddedTileData : Tiled.EmbeddedTileData
+nullEmbeddedTileData =
+    { columns = 0
+    , firstgid = 0
+    , image = ""
+    , imageheight = 0
+    , imagewidth = 0
+    , margin = 0
+    , name = ""
+    , spacing = 0
+    , tilecount = 0
+    , tileheight = 0
+    , tilewidth = 0
+    , transparentcolor = ""
+    , tiles = Dict.empty
+    , properties = Dict.empty
+    }
+
+
+firstTileSetData : Tiled.Level -> Tiled.EmbeddedTileData
+firstTileSetData level =
+    case
+        List.head level.tilesets
+    of
+        Just a ->
+            case a of
                 Tiled.TilesetEmbedded a ->
                     a
 
                 _ ->
-                    Debug.crash "We need an embeddedTileData object in the .json file.\n See https://discourse.mapeditor.org/t/how-do-i-embed-the-tilesets/1761"
+                    nullEmbeddedTileData
 
-        xTileCount =
-            embeddedTileData.columns
+        Nothing ->
+            nullEmbeddedTileData
 
-        xTileNumber =
-            if xTileCount == 0 then
-                0
-            else
-                tileNumber % xTileCount
 
-        yTileNumber =
-            tileNumber // xTileCount
 
-        xTilePxStart =
-            (xTileNumber * embeddedTileData.tilewidth) - embeddedTileData.tilewidth
+-- Tiled.TilesetEmbedded a ->
+--     a
+-- _ ->
+--     Debug.crash
+--         ("We need an embeddedTileData object in the .json file. "
+--             ++ toString level
+--             ++ " See https://discourse.mapeditor.org/t/how-do-i-embed-the-tilesets/1761"
+--         )
 
-        yTilePxStart =
-            (yTileNumber * embeddedTileData.tileheight)
+
+cropImage : Tiled.Level -> Int -> Element.Element
+cropImage level tileNumber =
+    let
+        embeddedTileData =
+            firstTileSetData level
+
+        ( x, y ) =
+            spritePixelPosition level tileNumber
     in
         Element.croppedImage
-            ( xTilePxStart, yTilePxStart )
+            ( x, y )
             level.tileheight
             level.tilewidth
             embeddedTileData.image
