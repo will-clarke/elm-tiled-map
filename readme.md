@@ -6,10 +6,14 @@ This package allows the (super inefficient!) rendering of Tiled Maps made with t
 ### Example
 
 Full tilemap:
+
 ![](http://i.wclarke.net/2018-06-13--e222j.png)
 
-Made from:
+Original sprite:
+
 ![](example/assets/image.png)
+
+See the [example](example/) directory to see how this was done.
 
 ### How to create the tileset
 You'll need to:
