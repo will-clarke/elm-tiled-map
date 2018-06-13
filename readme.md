@@ -1,5 +1,6 @@
 # Tiled Map
 
+[View this on package.elm-lang.org](http://package.elm-lang.org/packages/will-clarke/elm-tiled-map/latest)
 
 This package allows the (super inefficient!) rendering of Tiled Maps made with the [Tiled](https://www.mapeditor.org/) / `.tmx` editor.
 
@@ -11,9 +12,9 @@ Full tilemap:
 
 Original sprite:
 
-![](example/assets/image.png)
+![](https://github.com/will-clarke/elm-tiled-map/raw/master/example/assets/image.png)
 
-See the [example](example/) directory to see how this was done.
+See the [example](https://github.com/will-clarke/elm-tiled-map/tree/master/example/) directory to see how this was done.
 
 ### How to create the tileset
 You'll need to:
